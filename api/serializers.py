@@ -13,6 +13,8 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields=('DepartmentId','DepartmentName')
 
 class EmployeeSerializer(serializers.ModelSerializer):
+    DepartmentName = serializers.CharField(source='Department.DepartmentName', read_only=True)
+
     class Meta:
         model=Employees 
-        fields=('EmployeeId','EmployeeName','Department','DateOfJoining')
+        fields=('EmployeeId','EmployeeName','Department','DepartmentName','DateOfJoining')

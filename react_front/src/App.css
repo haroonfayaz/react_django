@@ -49,8 +49,31 @@
 .table{
   margin-left: 10rem;
   padding: 1rem;
+  font-size: 1.2rem;
   background-color: bisque;
-  border-radius: 2rem;
-  width: 40vw;
+  border-radius: 3rem;
+  width: 60vw;  
   text-align: center;
+} 
+.mod {
+  position: absolute;
+  right: 18rem;
+  top: 2rem;
+  height: 3rem;
+  width: 12rem;
+  color:#1A1C20;
+  font-size: 10px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-weight: 800;   
+  text-decoration: none;
+  transition: ease 0.40s;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.modal-body input {
+
+  margin: 1rem ;
+  margin-right: 1rem;
 }
