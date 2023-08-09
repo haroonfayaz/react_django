@@ -10,8 +10,9 @@ function Student() {
 
   const handleSaveChanges = async () => {
     if (newStudentName && newStudentEmail) {
+      console.log(newStudentName,newStudentEmail)
       try {
-        const response = await axios.post('http://localhost:8000/students', {
+        const response = await axios.post('http://localhost:8000/students/', {
           name: newStudentName,
           email: newStudentEmail
         });

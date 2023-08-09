@@ -4,24 +4,29 @@ import {useState,useEffect} from 'react';
 
 
 const Employee = () => {
-  const [employees,setEmployees]=useState([]);
+  const [employees, setEmployees] = useState([]);
   const [newEmployeeName, setNewEmployeeName] = useState('');
   const [newEmployeeDept, setNewEmployeeDept] = useState('');
   const [newEmployeeJoiningDate, setNewEmployeeJoiningDate] = useState('');
+  const [departments, setDepartments] = useState([]);
 
 
   const handleSaveForm = async () => {
-    if (newEmployeeName && newEmployeeDept && newEmployeeJoiningDate) {
-      try {
-        const response = await axios.post('http://localhost:8000/employee', {
-          name: newEmployeeName,
-          dept: newEmployeeDept,
-          joining_date: newEmployeeJoiningDate,
+    try {
+      const selectedDepartment = departments.find(dep => dep.DepartmentName === newEmployeeDept);
+      if (!selectedDepartment) {
+        console.error('Selected department not found');
+        return;
+      }
+ 
+        const response = await axios.post("http://localhost:8000/employee", {
+          EmployeeName: newEmployeeName,
+          Department: selectedDepartment.DepartmentId,
+          DateOfJoining: newEmployeeJoiningDate,
         });
+        console.log(response.data)
 
         setEmployees([...employees, response.data]);
-
-        // Clear input fields after saving
         setNewEmployeeName('');
         setNewEmployeeDept('');
         setNewEmployeeJoiningDate('');
@@ -29,22 +34,22 @@ const Employee = () => {
         console.error(error);
       }
     }
-  };
+  
+
 
   useEffect(()=>{
-    async function getAllEmployees(){
-      const employees = await axios.get("http://localhost:8000/employee")
+    async function getAllEmployees() {
       try {
-        setEmployees(employees.data)
-
-        
+        const employeesResponse = await axios.get("http://localhost:8000/employee");
+        const departmentsResponse = await axios.get("http://localhost:8000/department");
+        setEmployees(employeesResponse.data);
+        setDepartments(departmentsResponse.data);
       } catch (error) {
-        console.log(error)
-        
+        console.error(error);
       }
     }
     getAllEmployees();
-  },[])
+  }, []);
 
   return (
     <>
@@ -76,13 +81,19 @@ const Employee = () => {
                     onChange={(e) => setNewEmployeeName(e.target.value)} 
 
                 />
-                 <input type="text" 
-                    className="form-control" 
-                    placeholder="Enter department name"
-                    value={newEmployeeDept}
-                    onChange={(e) => setNewEmployeeDept(e.target.value)} 
+               <select
+                      className="form-control"
+                      value={newEmployeeDept}
+                      onChange={(e) => setNewEmployeeDept(e.target.value)}
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map((dep) => (
+                        <option key={dep.DepartmentId} value={dep.DepartmentName}>
+                          {dep.DepartmentName}
+                        </option>
+                      ))}
+                </select>
 
-                />
                  <input type="date" 
                     className="form-control" 
                     placeholder="Enter joining date"
