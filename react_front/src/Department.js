@@ -2,10 +2,12 @@ import React from 'react'
 import axios from 'axios';
 import {useState,useEffect} from 'react';
 import Modal from './Modal';
+import { useParams } from 'react-router-dom';
 
 const Department = () => {
   const[department,setDepartment]=useState([]);
   const [newDepartmentName, setNewDepartmentName] = useState('');
+  const {id} = useParams();
   
   const handleSaveChanges = async () => {
     if (newDepartmentName) {
@@ -17,18 +19,24 @@ const Department = () => {
       setNewDepartmentName('');
     }
   };
-
-
-  useEffect(()=>{
-    async function getAllDepartments(){
-      const department = await axios.get("http://localhost:8000/department")
-      try {
-        setDepartment(department.data)
-      } catch (error) {
-        console.log(error)
-        
-      }
+  
+ const getAllDepartments = async()=>{
+  try {
+    const department = await axios.get("http://localhost:8000/department")
+  
+      setDepartment(department.data)
+    } catch (error) {
+      console.log(error)
+      
     }
+  }
+  const deleteDepartment = async (id)=>{
+    await axios.delete(`http://localhost:8000/department/${id}`)
+    getAllDepartments();
+  };
+
+
+  useEffect(()=>{ 
     getAllDepartments();
   },[])
   return(
@@ -46,16 +54,23 @@ const Department = () => {
             <thead>
                 <tr>
                 <th scope="col">Id</th>
+                <th scope="col">Serial</th>
                 <th scope="col">Department Name</th>
+                <th scope="col">Actions</th>
+
                 </tr>
                 </thead>
                     <tbody>
                     {department.map((value,i)=>{
                         return(
                     <tr key={i}>
-                      <th scope="row">{value.DepartmentId}</th>
+                      <th scope="row">{i+1}</th>
+                      <td>{value.DepartmentId}</td>
                       <td>{value.DepartmentName}</td>
-                     
+                      <td>
+                      <button className='btn btn-success me-3'>Edit</button>
+                      <button className='btn btn-danger' onClick={()=>{deleteDepartment(value.DepartmentId)}}>Delete</button>
+                      </td>
 
                     </tr>)
                     })}

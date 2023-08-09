@@ -1,6 +1,7 @@
 import React from 'react'
 import axios from 'axios';
 import {useState,useEffect} from 'react';
+import {useParams} from 'react-router-dom';  
 
 
 const Employee = () => {
@@ -9,6 +10,8 @@ const Employee = () => {
   const [newEmployeeDept, setNewEmployeeDept] = useState('');
   const [newEmployeeJoiningDate, setNewEmployeeJoiningDate] = useState('');
   const [departments, setDepartments] = useState([]);
+
+  const {id}=useParams();
 
 
   const handleSaveForm = async () => {
@@ -34,22 +37,29 @@ const Employee = () => {
         console.error(error);
       }
     }
-  
+ 
+ const  getAllEmployees= async()=> {
+    try {
+      const employeesResponse = await axios.get("http://localhost:8000/employee");
+      const departmentsResponse = await axios.get("http://localhost:8000/department");
+      setEmployees(employeesResponse.data);
+      setDepartments(departmentsResponse.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
 
   useEffect(()=>{
-    async function getAllEmployees() {
-      try {
-        const employeesResponse = await axios.get("http://localhost:8000/employee");
-        const departmentsResponse = await axios.get("http://localhost:8000/department");
-        setEmployees(employeesResponse.data);
-        setDepartments(departmentsResponse.data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    getAllEmployees();
+      getAllEmployees();
   }, []);
+  
+  const deleteEmployee =  async(id)=>{
+    // console.log(id)
+    await axios.delete(`http://localhost:8000/employee/${id}`)
+    getAllEmployees();
+    
+  }
 
   return (
     <>
@@ -116,9 +126,12 @@ const Employee = () => {
             <thead>
                 <tr>
                 <th scope="col">Id</th>
+                <th scope="col">Serial</th>
                 <th scope="col">Name</th>
                 <th scope="col">Department</th>
                 <th scope="col">Joining Date</th>
+                <th scope="col">Actions</th>
+
 
                 </tr>
                 </thead>
@@ -126,11 +139,15 @@ const Employee = () => {
                     {employees.map((employee,i)=>{
                         return(
                     <tr key={i}>
-                      <th scope="row">{employee.EmployeeId}</th>
+                      <th scope="row">{i+1}</th>
+                      <td>{employee.EmployeeId}</td>
                       <td>{employee.EmployeeName}</td>
                       <td>{employee.DepartmentName}</td>
                       <td>{employee.DateOfJoining}</td>
-
+                      <td>
+                      <button className='btn btn-success me-3'>Edit</button>
+                      <button className='btn btn-danger' onClick={()=>{deleteEmployee(employee.EmployeeId)}}>Delete</button>
+                      </td>
                     </tr>)
                     })}
             </tbody>

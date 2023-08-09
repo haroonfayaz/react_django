@@ -1,12 +1,14 @@
 import axios from 'axios';
 import {useState,useEffect} from 'react';
 import React from 'react';
+import { useParams } from 'react-router-dom';
 
 
 function Student() {
   const [students,setStudents]=useState([]);
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentEmail, setNewStudentEmail] = useState('');
+  const {id}=useParams();
 
   const handleSaveChanges = async () => {
     if (newStudentName && newStudentEmail) {
@@ -28,17 +30,22 @@ function Student() {
       }
     }
   };
+ const getAllStudents = async ()=>{
+    try {
+      const students = await axios.get("http://localhost:8000/students/")
+      setStudents(students.data)
+              
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const deleteStudent = async (id)=>{
+    await axios.delete(`http://localhost:8000/students/${id}`)
+    getAllStudents();
+  }
 
   useEffect(()=>{
-    async function getAllStudents(){
-      try {
-        const students = await axios.get("http://localhost:8000/students")
-        setStudents(students.data)
-                
-      } catch (error) {
-        console.log(error)
-      }
-    }
     getAllStudents()
   },[])
   return (
@@ -90,19 +97,29 @@ function Student() {
             <thead>
                 <tr>
                 <th scope="col">Id</th>
+                <th scope="col">Serial</th>
                 <th scope="col">Name</th>
                 <th scope="col">Email</th>
+                <th scope="col">Actions</th>
+
                 </tr>
                 </thead>
                     <tbody>
                     {students.map((student,i)=>{
                         return(
                     <tr key={i}>
-                      <th scope="row">{student.id}</th>
+                      <th scope="row">{i+1}</th>
+                      <td>{student.id}</td>
                       <td>{student.name}</td>
                       <td>{student.email}</td>
+                      <td>
+                      <button className='btn btn-success me-3'>Edit</button>
+                      <button className='btn btn-danger'onClick={()=>{deleteStudent(student.id)}}>Delete</button>
+                      </td>
                     </tr>)
+                    
                     })}
+                   
             </tbody>
         </table>
         </div>
