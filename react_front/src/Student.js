@@ -2,6 +2,9 @@ import axios from 'axios';
 import {useState,useEffect} from 'react';
 import React from 'react';
 import { useParams } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import { DataGrid } from '@mui/x-data-grid';
+import Button from '@mui/material/Button';
 
 
 function Student() {
@@ -9,6 +12,7 @@ function Student() {
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentEmail, setNewStudentEmail] = useState('');
   const {id}=useParams();
+  const [editingStudentId, setEditingStudentId] = useState(null); 
 
   const handleSaveChanges = async () => {
     if (newStudentName && newStudentEmail) {
@@ -19,10 +23,8 @@ function Student() {
           email: newStudentEmail
         });
   
-        // Update the local state with the newly added student
         setStudents([...students, response.data]);
   
-        // Clear the input fields after saving
         setNewStudentName('');
         setNewStudentEmail('');
       } catch (error) {
@@ -48,6 +50,95 @@ function Student() {
   useEffect(()=>{
     getAllStudents()
   },[])
+
+  const editStudent =async(id)=>{
+    console.log(id);
+    setEditingStudentId(id); 
+    console.log(setEditingStudentId);
+    try {
+      const response = await axios.put(`http://localhost:8000/students/${id}`, {
+        name: newStudentName,
+        email: newStudentEmail,
+      });
+      console.log(response.data)
+      const updatedStudents = students.map(student => {
+        if (student.id === id) {
+          return {
+            ...student,
+            name: newStudentName,
+            email: newStudentEmail,
+          };
+        }
+        return student;
+      });
+  
+      setStudents(updatedStudents);
+      setNewStudentName('');
+      setNewStudentEmail('');
+      setEditingStudentId(null); 
+    }
+    catch (error) {
+      console.error(error);
+    }
+  };
+
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 25 },
+    {
+      field: 'serial',
+      headerName: 'Serial',
+      width: 25,
+      editable: false,
+    },
+    {
+      field: 'name',
+      headerName: 'Name',
+      width: 150,
+      editable: false,
+    },
+    {
+      field: 'email',
+      headerName: 'Email',
+      width: 160,
+      editable: false,
+    },
+    {
+      field: 'actions', // Field name for the button column
+      headerName: 'Actions', // Column header text
+      width: 190,
+      renderCell: (params) => (
+        <div style={{ display: 'flex', gap: '10px' }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => editStudent(params.row.serial)} 
+        >
+          Edit
+        </Button>
+       
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => deleteStudent(params.row.serial)} 
+        >
+          Delete
+        </Button>
+        </div>
+       
+      ),
+    },
+  ];
+
+  const rows= students.map((student,i)=>({
+    id:i+1,
+    serial :student.id,
+    name:student.name,
+    email:student.email,
+    
+
+}));
+
+
   return (
     <>
     <div className="container ">
@@ -56,72 +147,76 @@ function Student() {
     <h2 className='heading_table'>Students</h2>
     <div className="mod">
         {/* <!-- Button trigger modal --> */}
-            <button type="button" className="btn btn-primary mod" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <button type="button" className="btn btn-primary mod" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={()=>{setEditingStudentId(null)}}>
             Add Student
             </button>
             </div>
 
             {/* <!-- Modal --> */}
             <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div className="modal-dialog">
+              <div className="modal-dialog">
                 <div className="modal-content">
-                <div className="modal-header">
-                    <h1 className="modal-title fs-5" id="exampleModalLabel">Enter Student Name </h1>
+                  <div className="modal-header">
+                    <h1 className="modal-title fs-5" id="exampleModalLabel">
+                      {editingStudentId ? 'Edit Student' : 'Add Student'}
+                    </h1>
                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div className="modal-body">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Enter student name"
+                      value={editingStudentId ? students.find(student => student.id === editingStudentId).name : newStudentName}
+                      onChange={(e) => setNewStudentName(e.target.value)}
+                    />
+                    <input
+                      type="email"
+                      className="form-control"
+                      placeholder="Enter student email"
+                      value={editingStudentId ? students.find(student => student.id === editingStudentId).email : newStudentEmail}
+                      onChange={(e) => setNewStudentEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={()=>{setEditingStudentId(null)}}>
+                      Close
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        if (editingStudentId) {
+                          editStudent(editingStudentId); // Edit mode
+                        } else {
+                          handleSaveChanges(); // Add mode
+                        }
+                      }}
+                      data-bs-dismiss="modal"
+                    >
+                      {editingStudentId ? 'Save Changes' : 'Save'}
+                    </button>
+                  </div>
                 </div>
-                <div className="modal-body">
-                <input type="text" 
-                    className="form-control" 
-                    placeholder="Enter student name"
-                    value={newStudentName}
-                    onChange={(e) => setNewStudentName(e.target.value)}
+              </div>
+              </div>
 
-                />
-                    <input type="email" 
-                    className="form-control" 
-                    placeholder="Enter student email"
-                    value={newStudentEmail}
-                    onChange={(e) => setNewStudentEmail(e.target.value)}
-                  
-
-                />
-                </div>
-                <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" className="btn btn-primary" onClick={handleSaveChanges} data-bs-dismiss="modal">Save </button>
-                </div>
-                </div>
-            </div>
-            </div>
-                  <table className="table">
-            <thead>
-                <tr>
-                <th scope="col">Id</th>
-                <th scope="col">Serial</th>
-                <th scope="col">Name</th>
-                <th scope="col">Email</th>
-                <th scope="col">Actions</th>
-
-                </tr>
-                </thead>
-                    <tbody>
-                    {students.map((student,i)=>{
-                        return(
-                    <tr key={i}>
-                      <th scope="row">{i+1}</th>
-                      <td>{student.id}</td>
-                      <td>{student.name}</td>
-                      <td>{student.email}</td>
-                      <td>
-                      <button className='btn btn-success me-3'>Edit</button>
-                      <button className='btn btn-danger'onClick={()=>{deleteStudent(student.id)}}>Delete</button>
-                      </td>
-                    </tr>)
-                    
-                    })}
-                   
-            </tbody>
-        </table>
+              <Box sx={{ height: 400, width: '60vw' }}>
+          <DataGrid
+           rows={rows}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
+                },
+              }}
+            pageSizeOptions={[5]}
+            checkboxSelection
+            disableRowSelectionOnClick
+              />
+        </Box> 
         </div>
         </div>
         </div>

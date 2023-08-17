@@ -2,6 +2,10 @@ import React from 'react'
 import axios from 'axios';
 import {useState,useEffect} from 'react';
 import {useParams} from 'react-router-dom';  
+import Box from '@mui/material/Box';
+import { DataGrid } from '@mui/x-data-grid';
+import Button from '@mui/material/Button';
+
 
 
 const Employee = () => {
@@ -55,11 +59,74 @@ const Employee = () => {
   }, []);
   
   const deleteEmployee =  async(id)=>{
-    // console.log(id)
+    console.log(id)
     await axios.delete(`http://localhost:8000/employee/${id}`)
     getAllEmployees();
     
   }
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 25 },
+    {
+      field: 'serial',
+      headerName: 'Serial',
+      width: 25,
+      editable: false,
+    },
+    {
+      field: 'name',
+      headerName: 'Name',
+      width: 150,
+      editable: false,
+    },
+    {
+      field: 'dept',
+      headerName: 'Department',
+      type: 'number',
+      width: 160,
+      editable: false,
+    },
+    {
+      field: 'joining_date',
+      headerName: 'Date of Joining',
+      width: 150,
+      editable: false,
+    },
+    {
+      field: 'actions', // Field name for the button column
+      headerName: 'Actions', // Column header text
+      width: 190,
+      renderCell: (params) => (
+        <div style={{ display: 'flex', gap: '10px' }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          // onClick={() => handleButtonClick(params.row.id)} // Handle button click
+        >
+          Edit
+        </Button>
+       
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => deleteEmployee(params.row.serial)} // Handle button click
+        >
+          Delete
+        </Button>
+        </div>
+       
+      ),
+    },
+  ];
+
+  const rows= employees.map((employee,i)=>({
+        id:i+1,
+        serial :employee.EmployeeId,
+        name:employee.EmployeeName,
+        dept:employee.DepartmentName,
+        joining_date:employee.DateOfJoining,
+        
+
+  }));
 
   return (
     <>
@@ -76,7 +143,7 @@ const Employee = () => {
             </div>
 
             {/* <!-- Modal --> */}
-            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="false">
             <div className="modal-dialog">
                 <div className="modal-content">
                 <div className="modal-header">
@@ -122,36 +189,22 @@ const Employee = () => {
             
             
     
-      <table className="table">
-            <thead>
-                <tr>
-                <th scope="col">Id</th>
-                <th scope="col">Serial</th>
-                <th scope="col">Name</th>
-                <th scope="col">Department</th>
-                <th scope="col">Joining Date</th>
-                <th scope="col">Actions</th>
-
-
-                </tr>
-                </thead>
-                    <tbody>
-                    {employees.map((employee,i)=>{
-                        return(
-                    <tr key={i}>
-                      <th scope="row">{i+1}</th>
-                      <td>{employee.EmployeeId}</td>
-                      <td>{employee.EmployeeName}</td>
-                      <td>{employee.DepartmentName}</td>
-                      <td>{employee.DateOfJoining}</td>
-                      <td>
-                      <button className='btn btn-success me-3'>Edit</button>
-                      <button className='btn btn-danger' onClick={()=>{deleteEmployee(employee.EmployeeId)}}>Delete</button>
-                      </td>
-                    </tr>)
-                    })}
-            </tbody>
-        </table>
+       <Box sx={{ height: 400, width: '60vw' }}>
+          <DataGrid
+           rows={rows}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
+                },
+              }}
+            pageSizeOptions={[5]}
+            checkboxSelection
+            disableRowSelectionOnClick
+              />
+        </Box> 
         </div>
         </div>
         </div>

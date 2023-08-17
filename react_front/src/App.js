@@ -29,8 +29,6 @@ return(
     <Navbar/> 
     {routes}      
     </>);
-
-
 }
 
 export default App;
